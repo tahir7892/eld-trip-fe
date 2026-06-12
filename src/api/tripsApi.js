@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_BASE_API_URL || 'http://localhost:8000/api';
+// Production (Vercel HTTPS) uses same-origin /api proxy — see vercel.json.
+// Direct http:// backend URLs are blocked as mixed content from https:// pages.
+const API_BASE =
+  import.meta.env.VITE_BASE_API_URL ||
+  (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api');
 
 const client = axios.create({
   baseURL: API_BASE,
