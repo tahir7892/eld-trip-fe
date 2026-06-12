@@ -1,13 +1,24 @@
 import axios from 'axios';
 
-// Production (Vercel HTTPS) uses same-origin /api proxy — see vercel.json.
-// Direct http:// backend URLs are blocked as mixed content from https:// pages.
-const API_BASE =
-  import.meta.env.VITE_BASE_API_URL ||
-  (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api');
+function resolveApiBase() {
+  // HTTPS pages cannot call http:// APIs (mixed content). Always use same-origin proxy.
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return '/api';
+  }
+
+  const envUrl = import.meta.env.VITE_BASE_API_URL;
+  if (envUrl && !envUrl.startsWith('http://')) {
+    return envUrl;
+  }
+  if (envUrl && typeof window === 'undefined') {
+    return envUrl;
+  }
+
+  return import.meta.env.DEV ? 'http://localhost:8000/api' : '/api';
+}
 
 const client = axios.create({
-  baseURL: API_BASE,
+  baseURL: resolveApiBase(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 90000,
 });
